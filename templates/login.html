@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gru CM Login Form</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" 
+        href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/gruStylesheet.css" />
+    <script type="text/javascript" src="js/gruLoginFunction.js"></script>
+</head>
+<body>
+	<nav>
+		<h1 class="page-header">
+			<a id="a" href="login.html">Gru Configuration Manager</a>
+		</h1>
+	</nav>
+	{{if .CreaAdmin}}
+	<div class="login">
+		<form method=get action="authentification">
+		<div>
+			<label>Admin Username</label> 
+			<input class="form-control" type="text" name="username" 
+				value="root" readonly>
+		</div>
+		<br>
+		<div>
+			<label>Admin Password</label> 
+			<input class="form-control" type="password" 
+				name="password" id="password"
+				placeholder="Enter Admin Password">
+		</div>
+		<br>
+		<div>
+			<label>Repeat Admin Password</label> 
+			<input class="form-control" type="password" 
+				id="nuovaPassword"
+				placeholder="Repeat Admin Password">
+		</div>
+		<br>
+		<input type="submit" 
+			class="btn btn-md btn-hover btn-default" id=submit
+			name="submit" value="Crea Amministratore"
+			onclick='checkPassword()'>
+		</form>
+		<br>
+		{{if .EtcdServerStatusCode}}
+		<div class="alert alert-danger fade in">
+			<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Error: </strong>{{.EtcdServerStatusCode}}
+		</div>
+		{{end}}
+	</div>
+	{{else if .CambiaPassword}}
+	<div class="login">
+		<form method=get action="authentification">
+		<div>
+			<label>Username</label> 
+			<input class="form-control" type="text" name="username"
+				placeholder="Enter Username">
+		</div>
+		<br>
+		<div>
+			<label>Password</label> 
+			<input class="form-control" type="password" 
+				name="password"
+				placeholder="Enter Password">
+		</div>
+		<br>
+		<div>
+			<label>New Password</label> 
+			<input class="form-control" type="password" 
+				name="nuovaPassword" id="password"
+				placeholder="Enter New Password">
+		</div>
+		<br>
+		<div>
+			<label>Repeat New Password</label> 
+			<input class="form-control" type="password" 
+				id="nuovaPassword"
+				placeholder="Repeat New Password">
+		</div>
+		<br>
+		<input type="submit" 
+			class="btn btn-md btn-hover btn-default" id=submit  
+			name="submit" value="Cambia Password"
+			onclick='checkPassword()'/>
+			<a href="login.html" id="tornaAlLogin">Torna al Login</a>
+		</form>
+		<br>
+		{{if .EtcdServerStatusCode}}
+		<div class="alert alert-danger fade in">
+			<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Error: </strong>{{.EtcdServerStatusCode}}
+		</div>
+		{{end}}
+	</div>
+	{{else}}
+	<div class="login">
+		<form method=get action="authentification">
+		<div>
+			<label>Username</label> 
+			<input class="form-control" type="text" name="username" 
+				placeholder="Enter Username">
+		</div>
+		<br>
+		<div>
+			<label>Password</label> 
+			<input class="form-control" type="password" name="password"
+				placeholder="Enter Password">
+		</div>
+		<br>
+		<input type="submit" 
+			class="btn btn-md btn-hover btn-default"  
+			name="submit" value="Login">
+			<a href="login.html?cambiaPassword=true" id="cambiaPassword">Cambia Password (ADMIN)</a>
+		</form>
+		
+		<br>
+		{{if .EtcdCreateAdminStatusCode}}
+		<div class="alert alert-success fade in">
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Success: </strong>{{.EtcdCreateAdminStatusCode}}
+		</div>
+		{{end}}
+		{{if .EtcdChangePasswordSuccess}}
+		<div class="alert alert-success fade in">
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Success: </strong>{{.EtcdChangePasswordSuccess}}
+		</div>
+		{{else if .EtcdChangePasswordFail}}
+		<div class="alert alert-danger fade in">
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Error: </strong>{{.EtcdChangePasswordFail}}
+		</div>
+		{{end}}
+		{{if .EtcdServerStatusCode}}
+		<div class="alert alert-danger fade in">
+			<a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			<strong>Error: </strong>{{.EtcdServerStatusCode}}
+		</div>
+		{{end}}
+	</div>
+	{{end}}
+</body>
+</html>

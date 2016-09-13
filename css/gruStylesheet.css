@@ -1,0 +1,202 @@
+#dropbtnCluster{
+    color:#9d9d9d;
+
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 28px;
+
+    text-decoration: none;
+
+    border-color: #222;
+    background-color: transparent;
+
+    border-width: 0px;
+}
+
+#dropbtnCluster:hover{
+    color: #fff;
+
+    border-color: #222;
+    background-color: transparent;
+
+    text-decoration: none;
+
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 28px;
+}
+
+#dropbtnCluster:focus{
+    background-color:#222; 
+}
+
+.analyticsCheckbox {
+    background-color: #4F6877;
+    border: 0;
+    color: #fff;
+    left: 0px;
+    padding: 2px 15px 2px 5px;
+    top: 2px;
+    width: 250px;
+    list-style: none;
+    height: 100px;
+    overflow: auto;
+    display: none;
+}
+
+.userRolesCheckbox {
+    background-color: #4F6877;
+    border: 0;
+    color: #fff;
+    left: 0px;
+    padding: 2px 15px 2px 5px;
+    top: 2px;
+    width: 250px;
+    list-style: none;
+    height: 100px;
+    overflow: auto;
+    /*display: none;*/
+}
+
+#a {
+    font-weight: bold;
+}
+
+#a:hover {
+    text-decoration: none;
+}
+
+.login {
+    position: absolute;
+    top: 50%;
+    left: 40%;
+}
+
+.alignDisposition {
+    display: inline-block;
+    vertical-align:top;
+    margin: 20px;
+}
+
+.alignDisposition label {
+    font-weight: normal;
+    width: 120px;
+}
+
+#agentConfigFields .alignDisposition label {
+    font-weight: normal;
+    width: 230px;
+    float: left;
+}
+
+#agentConfigFields #agentMetricServiceAlign label{
+    width: 160px;
+}
+
+#agentConfigFields form input, 
+#serviceConfigFields form input, 
+#policyConfigFields form input, 
+#analyticsConfigFields form input,
+#agentConfigFields button, 
+#serviceConfigFields button, 
+#policyConfigFields button, 
+#analyticsConfigFields button{
+    width: 30%;
+    margin: 5px;
+}
+
+.login label{
+    width: 80px;
+    float: left;
+}
+
+.form-control{
+    width:250px;
+    display: block;
+    border-color:#ccc;
+}
+
+#dropDeleteBtn {
+    display: none;
+}
+
+body{
+    background-image: -webkit-linear-gradient(top right, #FFFFFF 0%, #AACFEF 100%);
+    background-image: -moz-linear-gradient(top right, #FFFFFF 0%, #AACFEF 100%);
+}
+
+nav{
+    margin-top:-20px; 
+    margin-left: 5px
+}
+
+nav h1 a{
+    margin-left:20px;
+}
+
+.navbar.navbar-inverse {
+    background-color: #330066;
+}
+
+li.dropdown{
+    display: none;
+}
+
+#dropdownCluster {
+    display: block;
+}
+
+#agentConfigFields,
+#serviceConfigFields,
+#policyConfigFields,
+#analyticsConfigFields,
+#userSettingsFields,
+#roleSettingsFields {
+    display: none;
+}
+
+#roleSendButton,
+#roleDeleteButton,
+#userDeleteButton,
+#userSendButton{
+    display: none;
+}
+
+table input {
+    margin: 5px;
+}
+table input[type=checkbox]{
+    margin: 10px;
+}
+
+#roleName, #userName {
+    margin: 15px;
+}
+
+#userSettingsFields label[for=userName]{
+    margin-left: 0px;
+    margin-bottom: 0px;
+    margin-top: 20px;
+}
+#userSettingsFields label,
+#userSettingsFields input,
+#userSettingsFields ul,
+#userSettingsFields h5 {
+    margin-left: 15px;
+    margin-bottom: 5px;
+}
+
+#cambiaPassword,
+#tornaAlLogin {
+    position: absolute;
+    margin-top: 5px;
+    right: 0px;
+}
+
+#userLogged{
+    position: absolute;
+    top:0px;
+    right: 0px;
+    margin-top:20px;
+    margin-right:20px;
+}

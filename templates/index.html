@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gru Configuration Manager</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" 
+        href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/gruStylesheet.css" />
+    <script type="text/javascript" 
+        src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" 
+        src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/gruIndexFunction.js"></script>
+    <script type="text/javascript" src="js/FileSaver.js"></script>
+</head>
+<body>
+    <nav>
+        <h1 class="page-header">
+            <a id="a" href="index.html">Gru Configuration Manager</a>
+        </h1>
+        {{if .UserLogged}}
+        <h2 id=userLogged>
+        Utente: {{.UserLogged}}
+        </h2>
+        {{end}}
+    </nav>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav">
+                <!-- Clusters ID-->
+                <li>
+                    <a id=valueOfClusterID>ClusterID: </a>
+                </li>
+                <!-- Clusters Available -->
+                    <li class="dropdown" id="dropdownCluster">
+                        <input class="dropdown-toggle" id="dropbtnCluster"
+                            type="button" data-toggle="dropdown" value="Select a Cluster" />
+                        <ul id="myDropdownCluster" class="dropdown-menu">
+                            <li><a href="#addCluster" class="cluster">Add Cluster</a></li>
+                            <li><a href="deleteMode" onclick="deleteCluster()"
+                                id=dropDeleteBtn class="cluster">Delete Cluster</a></li>
+                            {{range .Config}}
+                                <li><a href="#{{.ClusterName}}" class="cluster">{{.ClusterName}}</a></li>
+                                {{if .ClusterID}}
+                                    <input type="hidden" 
+                                        id='{{.ClusterName}}ID' 
+                                        value='{{.ClusterID}}'/>
+                                {{end}}
+                            {{end}}
+                        </ul>
+                    </li>
+                <!-- Clusters Configuration Type -->
+                    <li class="dropdown" id="dropdownConfigType">
+                        <a class="dropdown-toggle" id="dropbtnConfigType"
+                            data-toggle="dropdown">Select a Type<span class="caret"></span></a>
+                        <ul id="myType" class="dropdown-menu">
+                            <li><a href="#agent" class="configType">agent</a></li>
+                            <li><a href="#service" class="configType">service</a></li>
+                            <li><a href="#policy" class="configType">policy</a></li>
+                            <li><a href="#analytics" class="configType">analytics</a></li>
+                            {{range $key := .Config}}
+                                {{if .AgentConfig}}
+                                <input type="hidden" 
+                                    id='config{{$key.ClusterName}}' value='{{.AgentConfig}}'>
+                                {{end}}
+                                {{if .PolicyConfig}}
+                                <input type="hidden" 
+                                    id='policy{{$key.ClusterName}}' value='{{.PolicyConfig}}'>
+                                {{end}} 
+                            {{end}}
+                        </ul>
+                    </li>
+
+                <!-- New Cluster Services -->
+                    <li class="dropdown" id="dropdownService">
+                        <a class="dropdown-toggle" id="dropbtnService"
+                            data-toggle="dropdown">Select a Service<span class="caret"></span></a>
+                        <ul id="myService" class="dropdown-menu">
+                            <li><a href="#addService" class="service">Add Service</a></li>
+                        </ul>
+                    </li>
+
+                <!-- New Cluster Analytics -->
+                    <li class="dropdown" id="dropdownAnalytics">
+                        <a class="dropdown-toggle" id="dropbtnAnalytics"
+                            type="button" data-toggle="dropdown">Select an Analytics<span class="caret"></span></a>
+                        <ul id="myAnalytics" class="dropdown-menu">
+                            <li><a href="#addAnalytics" class="analytics">Add Analytics</a></li>
+                        </ul>
+                    </li>
+
+                    {{range $key := .Config}}
+
+                        {{if .ServicesConfig}}
+                <!-- Cluster {{.ClusterName}} Services -->
+                    <li class="dropdown" id="dropdownService{{.ClusterName}}">
+                        <a class="dropdown-toggle" id="dropbtnService{{.ClusterName}}"
+                            type="button" data-toggle="dropdown">Select a Service<span class="caret"></span></a>
+                        <ul id="myService{{.ClusterName}}" class="dropdown-menu">
+                            <li><a href="#addService" class="service{{.ClusterName}}">Add Service</a></li>
+                            {{range .ServicesConfig}}
+                                <li><a href="#{{.KeyService}}" 
+                                    class='service{{$key.ClusterName}}'>{{.KeyService}}</a>
+                                <input type="hidden" 
+                                    id='{{.KeyService}}{{$key.ClusterName}}' 
+                                    value="{{.ValueService}}"><li> 
+                            {{end}}
+                        </ul>
+                    </li>
+                        {{end}}
+
+                        {{if .AnalyticsConfig}}
+                <!-- Cluster {{.ClusterName}} Analytics -->
+                    <li class="dropdown" id="dropdownAnalytics{{.ClusterName}}">
+                        <a class="dropdown-toggle" 
+                            id="dropbtnAnalytics{{.ClusterName}}"
+                            type="button" data-toggle="dropdown">Select an Analytics<span class="caret"></span></a>
+                        <ul id="myAnalytics{{.ClusterName}}" class="dropdown-menu">
+                            <li><a href="#addAnalytics" class="analytics{{.ClusterName}}">Add Analytics</a></li>
+                            {{range .AnalyticsConfig}}
+                                <li><a href="#{{.KeyAnalytics}}" 
+                                    class='analytics{{$key.ClusterName}}'>{{.KeyAnalytics}}</a>
+                                <input type="hidden" 
+                                    id='{{.KeyAnalytics}}{{$key.ClusterName}}' 
+                                    value="{{.ValueAnalytics}}"></li>
+                            {{end}}
+                        </ul>
+                    </li>
+                        {{end}}
+                    {{end}}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {{if .AdminLogged}}
+                <li>
+                <!--
+                    BOTTONE CREA UTENTE PER L'ADMIN DEL SISTEMA
+                --> 
+                    <!-- Roles Settings -->
+                    <a  data-toggle="modal" data-target="#myModal">Roles Settings</a>
+                    <!-- Modal -->
+                    <div class="modal fade" id="myModal" role="dialog">
+                        <div class="modal-dialog">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <form method="post" id=roleForm action="addMode">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" 
+                                            data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Roles</h4>
+                                        <ul class="nav">
+                                            <li><a class="btn btn-primary btn-xs" 
+                                                id="dropbtnRole"
+                                                data-toggle="dropdown">Select Role <span class="caret"></span></a>
+                                                <ul class="dropdown-menu btn-block">
+                                                    <li><a class="role">Add Role</a></li>
+                                                    {{range $key := .RoleConfig}}
+                                                        <li><a class="role">{{$key.Role}}</a></li>
+                                                    {{end}}
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-body" id="roleSettingsFields">
+                                        <label for=roleName>Name </label>
+                                        <input class="form-control" type="text" 
+                                            name=roleName id=roleName />
+                                        <!-- Gestione Permessi / Autorizzazioni
+                                            mezzo tabella -->
+                                        <table class="table table-hover" 
+                                            id="tableOfPermissionsRole">
+                                            <tbody>
+                                                <tr>
+                                                    <th align=left>
+                                                    Role Permissions
+                                                    </th>
+                                                </tr>
+                                                <tr><td><input type=radio name=permission checked class=permission1 onclick='focusTable(event)' /><input type=text class=permission1
+                                                        onfocus='setMarcatoreRiga("tableOfPermissionsRole","permission",1)'
+                                                        onclick='focusTable(event);setMarcatoreRiga("tableOfPermissionsRole","permission",1)'
+                                                        onmouseover='setMarcatoreRiga("tableOfPermissionsRole","permission",1)'
+                                                        onchange='gestisciRiga("tableOfPermissionsRole","permission",1)' /><input type=checkbox class=permission1 onclick='focusTable(event)' checked disabled/>read<input type=checkbox class=permission1 onclick='focusTable(event)' />write</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <!-- Gestione Permessi / Autorizzazioni
+                                            mezzo tabella -->
+                                        {{range $key := .RoleConfig}}
+                                            <input type="hidden" id="{{.Role}}Read" 
+                                                value="{{.Permissions.KV.Read}}" />
+                                            <input type="hidden" id="{{.Role}}Write"
+                                                value="{{.Permissions.KV.Write}}" />
+                                        {{end}}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type=submit value=Delete 
+                                            id="roleDeleteButton"
+                                            class="btn btn-default"
+                                            onclick="deleteParametriRuolo()" />
+                                        <input type="hidden" name="permessiRuoloReadBegin"
+                                            id="permessiRuoloReadBegin" />
+                                        <input type="hidden" name="permessiRuoloWriteBegin"
+                                            id="permessiRuoloWriteBegin" />
+                                        <input type="hidden" name="permessiRuoloReadEnd"
+                                            id="permessiRuoloReadEnd" />
+                                        <input type="hidden" name="permessiRuoloWriteEnd"
+                                            id="permessiRuoloWriteEnd" />
+                                        <input type="hidden" name="actionObject" value=role>
+                                        <input type=submit value=Send 
+                                            id="roleSendButton"
+                                            class="btn btn-default"
+                                            onclick="checkParametriRuolo()" />
+                                        <button type="button" class="btn btn-default" 
+                                            data-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                    <!-- Users Settings -->
+                <li>
+                    <a  data-toggle="modal" data-target="#myModal2">Users Settings</a>
+                    <!-- Modal -->
+                    <div class="modal fade" id="myModal2" role="dialog">
+                        <div class="modal-dialog">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <form method="post" id=userForm action="addMode">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" 
+                                            data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Users</h4>
+                                        <ul class="nav">
+                                            <li><a class="btn btn-primary btn-xs" 
+                                            id="dropbtnUser"
+                                            data-toggle="dropdown">Select User <span class="caret"></span></a>
+                                                <ul class="dropdown-menu btn-block">
+                                                    <li><a class="user">Add User</a></li>
+                                                    {{range $key := .UserConfig}}
+                                                        <li><a class="user">{{$key.User}}</a></li>
+                                                    {{end}}
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-body" id="userSettingsFields">
+                                        <label for=userName>Name </label>
+                                        <input class="form-control" type="text" 
+                                            name=userName id=userName />
+                                        <label for=userPassword>Password </label>
+                                        <input class="form-control" type="password" 
+                                            name=userPassword id=userPassword />
+                                        <label for=userConfermaPassword
+                                            >Confirm Password </label>
+                                        <input class="form-control" type="password" 
+                                            id=userConfermaPassword />
+                                        <h5>Roles Relationship</h5>
+                                        <ul class="userRolesCheckbox">
+                                            {{range $key := .UserConfig}}
+                                                <input type=hidden id="{{$key.User}}Roles"
+                                                    value="{{$key.Roles}}" />
+                                            {{end}}
+                                            {{range .RoleConfig}}
+                                            <div>
+                                                <input type=checkbox 
+                                                    class="userRoles" checked="false" 
+                                                    value={{.Role}} />
+                                                {{.Role}}               
+                                            </div>
+                                            {{end}}
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type=submit value=Delete 
+                                            id="userDeleteButton"
+                                            class="btn btn-default"
+                                            onclick="deleteParametriUtente()" />
+                                        <input type="hidden" name="ruoliUtenteBegin"
+                                            id="ruoliUtenteBegin" />
+                                        <input type="hidden" name="ruoliUtenteEnd"
+                                            id="ruoliUtenteEnd" />
+                                        <input type="hidden" name="actionObject" value=user>
+                                        <input type=submit value=Send 
+                                            id="userSendButton"
+                                            class="btn btn-default"
+                                            onclick="checkParametriUtente()" />
+                                        <button type="button" class="btn btn-default" 
+                                            data-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <!--
+                    BOTTONE CREA UTENTE PER L'ADMIN DEL SISTEMA
+                -->
+                </li>
+                {{end}}
+                <li>
+                    <a href="authentification?submit=Logout">
+                        <span class="glyphicon glyphicon-log-out"></span> Log out
+                    </a> 
+                </li>  
+            </ul>
+        </div>
+    </nav>
+    {{if .OperazioneEseguita}}
+    <div class="alert alert-success fade in">
+        <a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>Success: </strong>{{.OperazioneEseguita}}
+    </div>
+    {{else if .OperazioneFallita}}
+    <div class="alert alert-danger fade in">
+        <a class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>Error: </strong>{{.OperazioneFallita}}
+    </div>
+    {{end}}
+    <div id="agentConfigFields">
+        <div class=alignDisposition>
+            <label>DaemonUrl</label> 
+            <input class="form-control" type=text id=agentDaemonUrl value="">
+            <br>
+            <label>DaemonTimeout</label> 
+            <input class="form-control" type=text id=agentDaemonTimeout value="">
+            <br>
+            <label>Autonomic LoopTimeInterval</label> 
+            <input class="form-control" type=text id=agentAutonomicLoopTimeInterval value="">
+            <br>
+            <label>Autonomic PlannerStrategy</label>
+            <select class="form-control" id="agentAutonomicPlannerStrategy">
+                <option selected>Select PlannerStrategy</option>
+                <option value="probdelta">probdelta</option>
+                <option value="probcumulative">probcumulative</option>
+                <option value="dummy">dummy</option>
+            </select>
+            <br>
+            <div>
+                <label>Autonomic EnableLogReading</label>
+                <input 
+                    type=checkbox id="agentAutonomicEnableLogReading" 
+                    value="true" checked>
+            </div>
+            <br>
+            <label>Communication LoopTimeInterval</label> 
+            <input class="form-control" 
+                type=text id=agentCommunicationLoopTimeInterval value="">
+            <br>
+            <label>Communication MaxFriends</label> 
+            <input class="form-control" type=text id=agentCommunicationMaxFriends value="">
+            <br>
+            <label>StorageService</label>
+            <select class="form-control" id="agentStorageService">
+                <option selected>Select StorageService</option>
+                <option value="internal">internal</option>
+            </select>
+        </div>
+        <div class=alignDisposition id=agentMetricServiceAlign>
+            <label>MetricService</label>
+            <select class="form-control" 
+                id="agentMetricService" onchange='selectAgentMetricService()'>
+                <option selected>Select MetricService</option>
+                <option value="influxdb">influxdb</option>
+            </select>
+            <br>
+            <div id="influxdbMetricService">
+                <label>Url</label> 
+                <input class="form-control" type=text id=agentUrl value="">
+                <br>
+                <label>DbName</label> 
+                <input class="form-control" type=text id=agentDbName value="">
+                <br>
+                <label>Username</label> 
+                <input class="form-control" type=text id=agentUsername value="">
+                <br>
+                <label>Password</label> 
+                <input class="form-control" type=text id=agentPassword value="">
+            </div>
+            <br>
+            <label>AppRoot</label> 
+            <input class="form-control" type=text id=agentAppRoot value="">
+            <br>
+            <label>TTL</label>
+            <input class="form-control" type=text id=agentTTL value="">
+        </div>
+        <br>
+        <br>
+        <form method=post id="formSendAgent" action=addMode>
+            <input class="btn btn-md btn-hover btn-default" type=submit id="sendAgentConfig" value="send/update agent configuration"
+                onclick="checkAgentValues()">
+            <input type=hidden id="clusterNameOfAgentToSend"
+                name="clusterNameOfAgentToSend" value="">
+            <input type=hidden name="actionObject" value="agent">
+            <input type=hidden id="agentConfigurationString" 
+                name="agentConfigurationString" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <form method=post action=deleteMode>
+            <input type=hidden class="btn btn-md btn-hover btn-default"
+                id="deleteAgentConfig" value="delete agent configuration"
+                onclick='addNameToInputValue("agent")'>
+            <input type=hidden id="clusterNameOfAgentToDelete" 
+                name="clusterNameOfAgentToDelete" value="">
+            <input type=hidden name="actionObject" value="agent">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <button id="exportAgentJson" 
+            class="btn btn-md btn-hover btn-default" onclick='expo("agent")'>
+        Esporta
+        </button>
+    </div>
+    <div id="serviceConfigFields">
+        <div class=alignDisposition>
+            <label>Name</label> 
+            <input class="form-control" type=text id=serviceName value="">
+            <br>
+            <label>Type</label> 
+            <input class="form-control" type=text id=serviceType value="">
+            <br>
+            <label>Image</label> 
+            <input class="form-control" type=text id=serviceImage value="">
+            <br>
+            <label>DiscoveryPort</label> 
+            <input class="form-control" type=text id=serviceDiscoveryPort value="">
+        </div>
+        <div class="alignDisposition">
+            Analytics
+
+           <!--
+                First list is for new cluster 
+            -->
+            <ul class="analyticsCheckbox" 
+                id="serviceAnalytics">
+            </ul>
+            <!--
+            -->
+
+            <!--
+                Lists for existence clusters config
+            -->
+            {{range $key := .Config}}
+            <ul class="analyticsCheckbox" 
+                id="serviceAnalytics{{$key.ClusterName}}">
+
+                {{range .AnalyticsConfig}}
+                <div>
+                    <input type=checkbox 
+                        id="serviceAnalytics{{$key.ClusterName}}{{.KeyAnalytics}}" 
+                        value="{{.KeyAnalytics}}">
+                    {{.KeyAnalytics}}               
+                </div>
+                {{end}}
+            </ul>
+            {{end}}
+            <!--
+            -->
+
+            <br>
+            <label>CpuNumber</label> 
+            <input class="form-control" type=text id=serviceCpuNumber value="">
+            <br>
+            <label>StopTimeout</label> 
+            <input class="form-control" type=text id=serviceStopTimeout value="">
+            <br>
+            <br>
+            <table class="table table-hover" id="tableOfServiceConstraints">
+                <tr>
+                    <strong>Constraints</strong>
+                    <th>
+                        NAME
+                    </th>
+                    <th>
+                        VALUE
+                    </th>
+                </tr>
+                <tr>
+                    <td class="tServCon1" >
+                        <input type="text" class="tServCon1" 
+                            onfocus='setMarcatoreRiga("tableOfServiceConstraints","tServCon",1)'
+                            onclick='setMarcatoreRiga("tableOfServiceConstraints","tServCon",1)'
+                            onmouseover='setMarcatoreRiga("tableOfServiceConstraints","tServCon",1)'
+                            onchange='gestisciRiga("tableOfServiceConstraints","tServCon",1)'>
+                    </td>
+                    <td>
+                        <input type="text" class="tServCon1">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class=alignDisposition>
+            <label>PortaGuest</label> 
+            <input class="form-control" type=text id=servicePortaGuest value="">
+            <br>
+            <label>PorteHost</label> 
+            <input class="form-control" type=text id=servicePorteHostFrom value="">
+            -
+            <input class="form-control" type=text id=servicePorteHostTo value="">
+            <br>
+            <label>Cmd</label> 
+            <input class="form-control" type=text id=serviceCmd value="">
+            <br>
+            <br>
+            <table class="table table-hover" id="tableOfEnvironmentVariables">
+                <tr>
+                    <strong>Environment Variables</strong>
+                    <th>
+                        NAME
+                    </th>
+                    <th>
+                        VALUE
+                    </th>
+                </tr>
+                <tr>
+                    <td class="tEnv1" >
+                        <input type="text" class="tEnv1" 
+                            onfocus='setMarcatoreRiga("tableOfEnvironmentVariables","tEnv",1)' 
+                            onclick='setMarcatoreRiga("tableOfEnvironmentVariables","tEnv",1)'
+                            onmouseover='setMarcatoreRiga("tableOfEnvironmentVariables","tEnv",1)'
+                            onchange='gestisciRiga("tableOfEnvironmentVariables","tEnv",1)'>
+                    </td>
+                    <td>
+                        <input type="text" class="tEnv1">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <br>
+        <form method=post id="formSendService" action=addMode>
+            <input type=submit class="btn btn-md btn-hover btn-default" 
+                id="sendServiceConfig" value="send/update service configuration"
+                onclick="checkServiceValues()">
+            <input type=hidden id="clusterNameOfServiceToSend"
+                name="clusterNameOfServiceToSend" value="">
+            <input type=hidden name="actionObject" value="service">
+            <input type=hidden id="serviceNameToSend" name="serviceNameToSend" value="">
+            <input type=hidden id="serviceConfigurationString" 
+                name="serviceConfigurationString" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <form method=post action=deleteMode>
+            <input type=hidden class="btn btn-md btn-hover btn-default"
+                id="deleteServiceConfig" value="delete service configuration" 
+                onclick='addNameToInputValue("service")'>
+            <input type=hidden id="clusterNameOfServiceToDelete"
+                name="clusterNameOfServiceToDelete" value="">
+            <input type=hidden name="actionObject" value="service">
+            <input type=hidden id="serviceNameToDelete" name="serviceNameToDelete" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <button class="btn btn-md btn-hover btn-default"
+            id="exportServiceJson" onclick='expo("service")'>
+        Esporta
+        </button>
+    </div>
+    <div id="policyConfigFields">
+        <div class=alignDisposition>
+            <p><b>SCALEIN</b></p>
+            <div>
+                <input type=checkbox id="policyScaleInEnable" 
+                    value="true" checked>
+                Enable
+            </div>
+            <br>
+            <label>Threshold</label> 
+            <input class="form-control" type=text id="policyScaleInThreshold" value="">
+            <br>
+            <label>Metrics</label> 
+            <select class="form-control" id="policyScaleInMetrics">
+                <option selected>Select Metrics</option>
+                <option value="cpu_avg">cpu_avg</option>
+                <option value="mem_avg">mem_avg</option>
+            </select>
+            <br>
+            <br>
+            Analytics
+
+            <!--
+                First list is for new cluster 
+            -->
+            <ul class="analyticsCheckbox" 
+                id="policyScaleInAnalytics">
+            </ul>
+            <!--
+            -->
+
+            <!--
+                Lists for existence clusters config
+            -->
+            {{range $key := .Config}}
+            <ul class="analyticsCheckbox" 
+                id="policyScaleInAnalytics{{$key.ClusterName}}">
+
+                {{range .AnalyticsConfig}}
+                <div>
+                    <input type=checkbox 
+                        id="policyScaleInEnable{{$key.ClusterName}}{{.KeyAnalytics}}" 
+                        value="{{.KeyAnalytics}}">
+                    {{.KeyAnalytics}}               
+                </div>
+                {{end}}
+            </ul>
+            {{end}}
+            <!--
+            -->
+        </div>
+        <div class=alignDisposition>
+            <p><b>SCALEOUT</b></p>
+            <div>
+                <input type=checkbox 
+                    id="policyScaleOutEnable" value="true" checked>
+                Enable 
+            </div>
+            <br>
+            <label>Threshold</label> 
+            <input class="form-control" type=text id="policyScaleOutThreshold" value="">
+            <br>
+            <label>Metrics</label> 
+            <select class="form-control" id="policyScaleOutMetrics">
+                <option selected>Select Metrics</option>
+                <option value="cpu_avg">cpu_avg</option>
+                <option value="mem_avg">mem_avg</option>
+            </select>
+            <br>
+            <br>
+            Analytics
+
+           <!--
+                First list is for new cluster 
+            -->
+            <ul class="analyticsCheckbox" 
+                id="policyScaleOutAnalytics">
+            </ul>
+            <!--
+            -->
+
+            <!--
+                Lists for existence clusters config
+            -->
+            {{range $key := .Config}}
+            <ul class="analyticsCheckbox" 
+                id="policyScaleOutAnalytics{{$key.ClusterName}}">
+
+                {{range .AnalyticsConfig}}
+                <div>
+                    <input type=checkbox 
+                        id="policyScaleOutAnalytics{{$key.ClusterName}}{{.KeyAnalytics}}" 
+                        value="{{.KeyAnalytics}}">
+                    {{.KeyAnalytics}}               
+                </div>
+                {{end}}
+            </ul>
+            {{end}}
+            <!--
+            -->
+        </div>
+        <div class=alignDisposition>
+            <p><b>SWAP</b></p>
+            <div>
+                <input type=checkbox 
+                    id="policySwapEnable" value="true" checked>
+                Enable
+            </div>
+            <br>
+            <label>Threshold</label> 
+            <input class="form-control" type=text id="policySwapThreshold" value="">
+            <br>
+            <label>Metrics</label> 
+            <select class="form-control" id="policySwapMetrics">
+                <option selected>Select Metrics</option>
+                <option value="cpu_avg">cpu_avg</option>
+                <option value="mem_avg">mem_avg</option>
+            </select>
+            <br>
+            <br>
+            Analytics
+
+           <!--
+                First list is for new cluster 
+            -->
+            <ul class="analyticsCheckbox" 
+                id="policySwapAnalytics">
+            </ul>
+            <!--
+            -->
+
+            <!--
+                Lists for existence clusters config
+            -->
+            {{range $key := .Config}}
+            <ul class="analyticsCheckbox" 
+                id="policySwapAnalytics{{$key.ClusterName}}">
+
+                {{range .AnalyticsConfig}}
+                <div>
+                    <input type=checkbox 
+                        id="policySwapAnalytics{{$key.ClusterName}}{{.KeyAnalytics}}" 
+                        value="{{.KeyAnalytics}}">
+                    {{.KeyAnalytics}}               
+                </div>
+                {{end}}
+            </ul>
+            {{end}}
+            <!--
+            -->
+        </div>
+        <br>
+        <br>
+        <form method=post id="formSendPolicy" action=addMode>
+            <input type=submit class="btn btn-md btn-hover btn-default"
+                id="sendPolicyConfig" value="send/update policy configuration"
+                onclick="checkPolicyValues()">
+            <input type=hidden id="clusterNameOfPolicyToSend"
+                name="clusterNameOfPolicyToSend" value="">
+            <input type=hidden name="actionObject" value="policy">
+            <input type=hidden id="policyConfigurationString" 
+                name="policyConfigurationString" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <form method=post action=deleteMode>
+            <input type=hidden class="btn btn-md btn-hover btn-default"
+                id="deletePolicyConfig" value="delete policy configuration"
+                onclick='addNameToInputValue("policy")'>
+            <input type=hidden id="clusterNameOfPolicyToDelete" 
+                name="clusterNameOfPolicyToDelete" value="">
+            <input type=hidden name="actionObject" value="policy">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <button class="btn btn-md btn-hover btn-default"
+            id="exportPolicyJson" onclick='expo("policy")'>
+        Esporta
+        </button>
+    </div>
+    <div id="analyticsConfigFields">
+        <div class=alignDisposition>
+            <br>
+            <br>
+            <label>Name</label> 
+            <input class="form-control" type=text id="analyticsName" value="">
+            <br>
+            <label>Expr</label> 
+            <input class="form-control" type=text id="analyticsExpr" value="">
+        </div>
+        <div class=alignDisposition>
+            <table class="table table-hover" id="tableOfAnalitycsMetrics">
+                <tr>
+                    <strong>Metrics</strong>
+                    <th>
+                        NAME
+                    </th>
+                </tr>
+                <tr>
+                    <td class="tMet1" >
+                        <input type="text" class="tMet1" 
+                            onfocus='setMarcatoreRiga("tableOfAnalitycsMetrics","tMet",1)' 
+                            onclick='setMarcatoreRiga("tableOfAnalitycsMetrics","tMet",1)'
+                            onmouseover='setMarcatoreRiga("tableOfAnalitycsMetrics","tMet",1)'
+                            onchange='gestisciRiga("tableOfAnalitycsMetrics","tMet",1)'>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class=alignDisposition>
+            <table class="table table-hover" id="tableOfAnalyticsConstraints">
+                <tr>
+                    <strong>Constraints</strong>
+                    <th>
+                        NAME
+                    </th>
+                </tr>
+                <tr>
+                    <td class="tCon1" >
+                        <input type="text" class="tCon1" 
+                            onfocus='setMarcatoreRiga("tableOfAnalyticsConstraints","tCon",1)' 
+                            onclick='setMarcatoreRiga("tableOfAnalyticsConstraints","tCon",1)'
+                            onmouseover='setMarcatoreRiga("tableOfAnalyticsConstraints","tCon",1)'
+                            onchange='gestisciRiga("tableOfAnalyticsConstraints","tCon",1)'>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <br>
+        <form method=post id="formSendAnalytics" action=addMode>
+            <input type=submit class="btn btn-md btn-hover btn-default"
+                id="sendAnalyticsConfig" 
+                value="send/update analytics configuration"
+                onclick="checkAnalyticsValues()">
+            <input type=hidden id="clusterNameOfAnalyticsToSend"
+                name="clusterNameOfAnalyticsToSend" value="">
+            <input type=hidden name="actionObject" value="analytic">
+            <input type=hidden id="analyticsNameToSend" name="analyticsNameToSend" value="">
+            <input type=hidden id="analyticsConfigurationString" 
+                name="analyticsConfigurationString" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}{{end}}"/>
+        </form>
+        <form method=post action=deleteMode>
+            <input type=hidden class="btn btn-md btn-hover btn-default"
+                id="deleteAnalyticsConfig" 
+                value="delete analytics configuration" 
+                onclick='addNameToInputValue("analytic")'>
+            <input type=hidden id="clusterNameOfAnalyticsToDelete"
+                name="clusterNameOfAnalyticsToDelete" value="">
+            <input type=hidden name="actionObject" value="analytic">
+            <input type=hidden id="analyticsNameToDelete" name="analyticsNameToDelete" value="">
+            <input type=hidden name=pathCode class=pathCode 
+                value="{{if .PathCode}}{{.PathCode}}#{{end}}"/>
+        </form>
+        <button class="btn btn-md btn-hover btn-default"
+            id="exportAnalyticsJson" onclick='expo("analytics")'>
+        Esporta
+        </button>
+    </div>
+</body>
+</html>
